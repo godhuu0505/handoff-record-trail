@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handoff Record Trail</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #192f38;
+      --muted: #536a70;
+      --paper: #f5f6f2;
+      --line: #d8e1dc;
+      --teal: #12685e;
+      --teal-soft: #e7f2eb;
+      --amber: #855215;
+      --amber-soft: #fff3d9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px 30px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    button, summary { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; }
+    button:focus-visible, summary:focus-visible {
+      outline: 3px solid #298fbb;
+      outline-offset: 4px;
+    }
+    .shell { max-width: 1120px; margin: 0 auto; }
+    header { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; }
+    h1 { margin: 0; font-size: clamp(28px, 3vw, 36px); letter-spacing: -1.1px; line-height: 1.2; }
+    .intro { color: var(--muted); margin: 9px 0 0; }
+    .demo-note { color: var(--muted); margin: 3px 0 0; white-space: nowrap; }
+    .demo-note::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: #64837a; }
+    .scenario { margin-top: 28px; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+    .step-label { color: var(--muted); margin: 0; font-size: 16px; }
+    #scenario-title { font-size: 21px; font-weight: 650; margin: 3px 0 0; letter-spacing: -.3px; }
+    .controls { display: flex; gap: 10px; flex-shrink: 0; }
+    button { border: 1px solid #b8c9c0; border-radius: 8px; padding: 10px 18px; cursor: pointer; background: #fff; color: var(--ink); font-weight: 600; }
+    button:hover:not(:disabled) { background: #edf2ed; border-color: #8ca99a; }
+    button.primary { background: var(--teal); border-color: var(--teal); color: white; }
+    button.primary:hover:not(:disabled) { background: #0c5249; }
+    button:disabled { cursor: default; opacity: .42; }
+    #feedback { margin: 22px 0; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    #feedback p { margin: 0 0 12px; }
+    #feedback p:last-child { margin: 0; }
+    .panels { display: grid; grid-template-columns: .85fr 1.15fr; gap: 22px; margin-top: 24px; align-items: start; }
+    .panel { background: white; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .panel-content { padding: 24px; }
+    .panel-label { margin: 0; font-weight: 650; font-size: 17px; }
+    .subtle { color: var(--muted); }
+    blockquote { font-size: 25px; line-height: 1.4; font-weight: 550; letter-spacing: -.45px; margin: 20px 0 24px; }
+    .pair { display: flex; justify-content: space-between; gap: 18px; padding: 11px 0; border-top: 1px solid #e7ece7; }
+    .pair dt, .pair dd { margin: 0; }
+    .pair dt { color: var(--muted); }
+    .pair dd { text-align: right; font-weight: 600; }
+    dl { margin: 0; }
+    .pinned-note { padding: 15px 24px; background: #f1f5f0; border-top: 1px solid var(--line); color: var(--muted); margin: 0; }
+    .result-banner { padding: 21px 24px; background: var(--teal-soft); border-bottom: 1px solid var(--line); }
+    .result-banner.warning { background: var(--amber-soft); }
+    .result-banner.neutral { background: #edf0f0; }
+    .result-banner h2 { margin: 0 0 5px; font-size: 24px; letter-spacing: -.5px; line-height: 1.3; }
+    .result-banner p { margin: 0; color: #2d5249; }
+    .result-banner.warning p { color: #70501e; }
+    .result-banner.neutral p { color: var(--muted); }
+    .heads { display: grid; gap: 10px; margin-top: 13px; }
+    .record { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 9px; }
+    .record p { margin: 0; }
+    .record-title { font-weight: 650; font-size: 18px; }
+    .record-status { color: var(--muted); text-align: right; max-width: 180px; }
+    .record-id { color: var(--muted); margin-top: 2px; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 15px; }
+    .trail-title { font-size: 17px; font-weight: 650; margin: 23px 0 12px; }
+    .paths { padding: 0; margin: 0; list-style: none; display: grid; gap: 9px; }
+    .path { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    .path code { padding: 4px 10px; border-radius: 5px; border: 1px solid #dce6df; background: #f5f8f4; font-weight: 600; }
+    .path code:last-child { background: var(--teal-soft); border-color: #b3d0bf; }
+    .path .arrow { color: #779389; }
+    .empty-note { margin: 14px 0 0; color: var(--muted); }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 1px 0; }
+    .footer p { color: var(--muted); margin: 0; font-size: 16px; }
+    details { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 15px; }
+    summary { cursor: pointer; color: var(--muted); width: fit-content; }
+    .query-label { margin: 16px 0 6px; font-weight: 600; }
+    pre { padding: 18px; background: #eaf0eb; border-radius: 8px; overflow: auto; font-size: 14px; line-height: 1.55; max-height: 300px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 680px) {
+      body { padding: 23px 18px; }
+      header { flex-direction: column; gap: 12px; }
+      .intro { margin-top: 12px; }
+      .scenario { margin-top: 22px; align-items: stretch; flex-direction: column; }
+      .controls button { flex: 1; }
+      .panels { grid-template-columns: 1fr; gap: 18px; margin-top: 20px; }
+      .panel-content, .result-banner { padding: 20px; }
+      .pinned-note { padding: 14px 20px; }
+      blockquote { font-size: 24px; }
+      .footer { align-items: flex-start; flex-direction: column; gap: 6px; }
+      .record { padding: 13px; gap: 12px; }
+      .record-status { max-width: 142px; }
+      #scenario-title { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Handoff Record Trail</h1>
+        <p class="intro">Follow a shared care record through later corrections.</p>
+      </div>
+      <p class="demo-note">Fictional demo</p>
+    </header>
+
+    <nav class="scenario" aria-label="Demo scenarios">
+      <div>
+        <p class="step-label" id="step-label">Step 1 of 6</p>
+        <h2 id="scenario-title">Before a correction</h2>
+      </div>
+      <div class="controls">
+        <button id="previous" type="button" disabled>Previous</button>
+        <button id="next" type="button" class="primary" disabled>Next</button>
+      </div>
+    </nav>
+
+    <div id="feedback" role="status" aria-live="polite">
+      <p id="feedback-text">Reading records…</p>
+      <button id="retry" type="button" hidden>Retry</button>
+    </div>
+
+    <main id="result" hidden aria-busy="true">
+      <div class="panels">
+        <section class="panel" aria-labelledby="shared-heading">
+          <div class="panel-content">
+            <h2 class="panel-label" id="shared-heading">What was shared</h2>
+            <blockquote id="shared-text"></blockquote>
+            <dl id="shared-meta">
+              <div class="pair"><dt>Original pet</dt><dd id="shared-pet"></dd></div>
+              <div class="pair"><dt>Referenced version</dt><dd id="shared-version"></dd></div>
+            </dl>
+          </div>
+          <p class="pinned-note" id="pinned-note">The shared message keeps its original reference.</p>
+        </section>
+
+        <section class="panel" aria-labelledby="result-title">
+          <div class="result-banner" id="result-banner">
+            <h2 id="result-title" role="status" aria-live="polite"></h2>
+            <p id="result-explanation"></p>
+          </div>
+          <div class="panel-content">
+            <h3 class="panel-label">Current records</h3>
+            <div class="heads" id="heads"></div>
+            <h3 class="trail-title" id="paths-heading">Correction paths</h3>
+            <ul class="paths" id="paths" aria-labelledby="paths-heading"></ul>
+            <p class="empty-note" id="empty-note" hidden></p>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <p id="engine"></p>
+        <p>Care actions remain a human decision.</p>
+      </div>
+      <details>
+        <summary>View query and response</summary>
+        <p class="query-label">Cypher query</p>
+        <pre id="query"></pre>
+        <p class="query-label">Response from this request</p>
+        <pre id="response"></pre>
+      </details>
+    </main>
+  </div>
+
+  <script>
+    'use strict';
+
+    const scenarios = [
+      'Before a correction',
+      'The record was for another Mochi',
+      'Two corrections disagree',
+      'Corrections agree, completion is unconfirmed',
+      'A correction has no pet reference',
+      'The shared record cannot be found'
+    ];
+    const explanations = {
+      one_current_version_for_the_original_pet: {
+        title: 'The record still matches',
+        text: 'The current record is marked completed for the original pet.'
+      },
+      the_shared_record_now_points_to_a_different_pet: {
+        title: 'Check with the caregiver',
+        text: 'The corrected record belongs to pet-b. Both pets are named Mochi, but this message referred to pet-a.'
+      },
+      multiple_current_versions: {
+        title: 'Two versions need a decision',
+        text: 'The correction paths end at different records. A caregiver needs to resolve the disagreement.'
+      },
+      completion_is_unconfirmed: {
+        title: 'Completion still needs confirmation',
+        text: 'Both paths lead to one corrected record for pet-a. That record leaves breakfast unconfirmed.'
+      },
+      a_current_version_has_no_unique_pet: {
+        title: 'A pet reference needs checking',
+        text: 'One current record cannot be linked to a single pet. Keep it visible until the reference is checked.'
+      },
+      unavailable: {
+        title: 'The record is unavailable',
+        text: 'This shared record could not be found. Ask the sender for the original reference.'
+      }
+    };
+    const elements = Object.fromEntries([
+      'previous', 'next', 'retry', 'feedback', 'feedback-text', 'result', 'step-label',
+      'scenario-title', 'shared-text', 'shared-meta', 'shared-pet', 'shared-version',
+      'pinned-note', 'result-banner', 'result-title', 'result-explanation', 'heads',
+      'paths', 'paths-heading', 'empty-note', 'engine', 'query', 'response'
+    ].map(id => [id, document.getElementById(id)]));
+
+    let step = 0;
+    let requestNumber = 0;
+    let activeRequest;
+
+    function addText(parent, tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      parent.append(element);
+      return element;
+    }
+
+    function validate(payload, requestedStep) {
+      const record = payload && payload.trace;
+      if (payload.step !== requestedStep || typeof payload.engine !== 'string' ||
+          !record || !['matched', 'needs_confirmation', 'unavailable'].includes(record.status) ||
+          !Array.isArray(record.current_heads) || !Array.isArray(record.paths) ||
+          typeof payload.query !== 'string') {
+        throw new Error('Unexpected response');
+      }
+      if (record.status !== 'unavailable' && (
+          typeof record.shared_text !== 'string' ||
+          typeof record.shared_pet_id !== 'string' ||
+          typeof record.shared_version_id !== 'string' ||
+          !explanations[record.reason] || record.paths.some(path => !Array.isArray(path)))) {
+        throw new Error('Incomplete record');
+      }
+      return record;
+    }
+
+    function render(payload, record) {
+      const unavailable = record.status === 'unavailable';
+      const explanation = explanations[unavailable ? 'unavailable' : record.reason];
+      elements['shared-text'].textContent = unavailable ? 'Shared message unavailable' : record.shared_text;
+      elements['shared-pet'].textContent = unavailable ? '' : record.shared_pet_id;
+      elements['shared-version'].textContent = unavailable ? '' : record.shared_version_id;
+      elements['shared-meta'].hidden = unavailable;
+      elements['pinned-note'].textContent = unavailable
+        ? 'Check the original reference with the sender.'
+        : 'The shared message keeps its original reference.';
+      elements['result-banner'].className = 'result-banner' + (
+        unavailable ? ' neutral' : record.status === 'needs_confirmation' ? ' warning' : '');
+      elements['result-title'].textContent = explanation.title;
+      elements['result-explanation'].textContent = explanation.text;
+      elements.heads.replaceChildren();
+      record.current_heads.forEach(head => {
+        const card = addText(elements.heads, 'article', '', 'record');
+        const identity = addText(card, 'div', '');
+        addText(identity, 'p', head.pet_name || 'Pet reference missing', 'record-title');
+        addText(identity, 'p', (head.pet_id || 'Pet not identified') + ' · ' + head.version_id, 'record-id');
+        addText(card, 'p', head.record_status === 'completed'
+          ? 'Recorded as completed' : 'Completion unconfirmed', 'record-status');
+      });
+      elements.paths.replaceChildren();
+      record.paths.forEach(path => {
+        const item = addText(elements.paths, 'li', '', 'path');
+        item.setAttribute('aria-label', path.join(' to '));
+        path.forEach((versionId, index) => {
+          if (index) {
+            const arrow = addText(item, 'span', '→', 'arrow');
+            arrow.setAttribute('aria-hidden', 'true');
+          }
+          addText(item, 'code', versionId);
+        });
+      });
+      elements['paths-heading'].hidden = unavailable;
+      elements['empty-note'].hidden = !unavailable;
+      elements['empty-note'].textContent = unavailable ? 'No record or correction path was returned.' : '';
+      elements.engine.textContent = 'Queried locally with ' + payload.engine;
+      elements.query.textContent = payload.query.trim();
+      elements.response.textContent = JSON.stringify(record, null, 2);
+    }
+
+    async function loadStep(requestedStep) {
+      const thisRequest = ++requestNumber;
+      if (activeRequest) activeRequest.abort();
+      const controller = new AbortController();
+      activeRequest = controller;
+      step = requestedStep;
+      elements['step-label'].textContent = 'Step ' + (step + 1) + ' of ' + scenarios.length;
+      elements['scenario-title'].textContent = scenarios[step];
+      elements.previous.disabled = true;
+      elements.next.disabled = true;
+      elements.retry.hidden = true;
+      elements.feedback.hidden = false;
+      elements['feedback-text'].textContent = 'Reading records…';
+      elements.result.hidden = true;
+      elements.result.setAttribute('aria-busy', 'true');
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch('/api/trace?step=' + step, {
+          cache: 'no-store', signal: controller.signal
+        });
+        if (!response.ok) throw new Error('Request failed');
+        const payload = await response.json();
+        if (thisRequest !== requestNumber) return;
+        const record = validate(payload, requestedStep);
+        render(payload, record);
+        elements.result.hidden = false;
+        elements.feedback.hidden = true;
+      } catch (error) {
+        if (thisRequest !== requestNumber) return;
+        elements['feedback-text'].textContent = 'The records could not be read. Check that the local demo server is running, then retry.';
+        elements.retry.hidden = false;
+      } finally {
+        clearTimeout(timeout);
+        if (thisRequest === requestNumber) {
+          elements.result.setAttribute('aria-busy', 'false');
+          elements.previous.disabled = step === 0;
+          elements.next.disabled = step === scenarios.length - 1;
+        }
+      }
+    }
+
+    elements.previous.addEventListener('click', () => loadStep(step - 1));
+    elements.next.addEventListener('click', () => loadStep(step + 1));
+    elements.retry.addEventListener('click', () => loadStep(step));
+    loadStep(0);
+  </script>
+</body>
+</html>

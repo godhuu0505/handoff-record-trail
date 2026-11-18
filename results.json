@@ -1,0 +1,174 @@
+{
+  "relate_db_version": "1.0.2",
+  "cases": [
+    {
+      "case": "before_correction",
+      "trace": {
+        "status": "matched",
+        "reason": "one_current_version_for_the_original_pet",
+        "shared_text": "Breakfast recorded as completed for Mochi.",
+        "shared_version_id": "r1",
+        "shared_pet_id": "pet-a",
+        "paths": [
+          [
+            "r1"
+          ]
+        ],
+        "current_heads": [
+          {
+            "version_id": "r1",
+            "pet_id": "pet-a",
+            "pet_name": "Mochi",
+            "record_status": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "case": "correction_to_another_pet_with_same_name",
+      "trace": {
+        "status": "needs_confirmation",
+        "reason": "the_shared_record_now_points_to_a_different_pet",
+        "shared_text": "Breakfast recorded as completed for Mochi.",
+        "shared_version_id": "r1",
+        "shared_pet_id": "pet-a",
+        "paths": [
+          [
+            "r1",
+            "r2"
+          ]
+        ],
+        "current_heads": [
+          {
+            "version_id": "r2",
+            "pet_id": "pet-b",
+            "pet_name": "Mochi",
+            "record_status": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "case": "unresolved_correction_branches",
+      "trace": {
+        "status": "needs_confirmation",
+        "reason": "multiple_current_versions",
+        "shared_text": "Breakfast recorded as completed for Mochi.",
+        "shared_version_id": "r1",
+        "shared_pet_id": "pet-a",
+        "paths": [
+          [
+            "r1",
+            "r2"
+          ],
+          [
+            "r1",
+            "r3"
+          ]
+        ],
+        "current_heads": [
+          {
+            "version_id": "r2",
+            "pet_id": "pet-b",
+            "pet_name": "Mochi",
+            "record_status": "completed"
+          },
+          {
+            "version_id": "r3",
+            "pet_id": "pet-a",
+            "pet_name": "Mochi",
+            "record_status": "unconfirmed"
+          }
+        ]
+      }
+    },
+    {
+      "case": "branches_converge_on_explicit_correction",
+      "trace": {
+        "status": "needs_confirmation",
+        "reason": "completion_is_unconfirmed",
+        "shared_text": "Breakfast recorded as completed for Mochi.",
+        "shared_version_id": "r1",
+        "shared_pet_id": "pet-a",
+        "paths": [
+          [
+            "r1",
+            "r2",
+            "r4"
+          ],
+          [
+            "r1",
+            "r3",
+            "r4"
+          ]
+        ],
+        "current_heads": [
+          {
+            "version_id": "r4",
+            "pet_id": "pet-a",
+            "pet_name": "Mochi",
+            "record_status": "unconfirmed"
+          }
+        ]
+      }
+    },
+    {
+      "case": "a_branch_has_no_pet_link",
+      "trace": {
+        "status": "needs_confirmation",
+        "reason": "a_current_version_has_no_unique_pet",
+        "shared_text": "Breakfast recorded as completed for Mochi.",
+        "shared_version_id": "r1",
+        "shared_pet_id": "pet-a",
+        "paths": [
+          [
+            "r1",
+            "r2",
+            "r4",
+            "r5"
+          ],
+          [
+            "r1",
+            "r2",
+            "r4",
+            "r6"
+          ],
+          [
+            "r1",
+            "r3",
+            "r4",
+            "r5"
+          ],
+          [
+            "r1",
+            "r3",
+            "r4",
+            "r6"
+          ]
+        ],
+        "current_heads": [
+          {
+            "version_id": "r5",
+            "pet_id": "pet-a",
+            "pet_name": "Mochi",
+            "record_status": "completed"
+          },
+          {
+            "version_id": "r6",
+            "pet_id": null,
+            "pet_name": null,
+            "record_status": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "case": "unknown_share",
+      "trace": {
+        "status": "unavailable",
+        "paths": [],
+        "current_heads": []
+      }
+    }
+  ]
+}
