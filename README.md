@@ -42,3 +42,5 @@ Relate 1.0.2 is embedded in Python. The local server uses Python's standard libr
 Development began on 17 November 2026 as a new standalone prototype inspired by earlier pet-care handoff work. Its source and fictional records were newly authored during the contest period. Codex assisted with planning, code, fixtures, internal review, and documentation. Playwright and Chrome were used for private browser checks and recording, and FFmpeg encoded the review video.
 
 [Relate Python guide](https://relatedb.ai/docs/guides/embed/python/) · [Relate package](https://pypi.org/project/relate-db/1.0.2/)
+
+[Watch the 89-second fictional-data demo](https://youtu.be/CFTlCs-SS-0)
