@@ -33,7 +33,28 @@ Use Previous and Next to inspect the shared message before correction, a correct
 
 The CLI asserts six fixture expectations and prints their actual traces. The five HTTP tests check all six stages against results.json, revisit stages in reverse order, reject invalid stage inputs, and exercise unavailable routes and engine failure.
 
-The source handoff retains its original reference within each reconstructed scenario. The prototype currently handles these fixed small acyclic histories. General record input, persistent storage, caregiver confirmation workflows, and real-world caregiver outcomes are future work.
+The source handoff retains its original reference within each reconstructed scenario. The prototype currently handles these fixed small acyclic histories. General record input, persistent sharing, caregiver confirmation workflows, and real-world caregiver outcomes are future work.
+
+## Inspect a persisted snapshot
+
+The browser demo still creates an in-memory graph for each request. The separate `snapshots/converged.rl` artifact is a single-file Relate store containing the fictional scenario after the two correction paths converge on `r4`. It can be inspected after the process that created it has exited.
+
+```sh
+.venv/bin/python export_store.py inspect snapshots/converged.rl
+```
+
+The command opens the existing store in read-only mode. It prints the shared reference, both correction paths, the current record, and the stored versions. The expected paths are `r1 → r2 → r4` and `r1 → r3 → r4`. The shared reference remains `pet-a` / `r1`, while `r4` is still marked `unconfirmed` and needs caregiver confirmation.
+
+To generate another copy from the same fixture statements, choose a new `.rl` path in an existing directory:
+
+```sh
+.venv/bin/python export_store.py create snapshots/recreated.rl
+.venv/bin/python export_store.py inspect snapshots/recreated.rl
+```
+
+Creation closes and flushes Relate before publishing the file. Existing paths are refused. `inspect` requires an existing `.rl` file and does not seed a new graph.
+
+The included snapshot is 36,864 bytes with SHA-256 `fdec9b689bf2c41a82e414c6a89ef9ba13587e9ce885b2a27402c14c08b12c36`. Regenerated stores can have different byte hashes while returning the same paths, versions and statuses.
 
 ## Technology and authorship
 
